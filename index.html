@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -17,6 +16,20 @@
         margin-top: 1rem;
         color: #d63384;
       }
+      .controls {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+      button {
+        margin: 0 0.5rem;
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 5px;
+        background-color: #d63384;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+      }
       .calendar {
         display: grid;
         grid-template-columns: 80px repeat(6, 1fr);
@@ -31,6 +44,7 @@
         text-align: center;
         font-size: 12px;
         overflow: hidden;
+        cursor: pointer;
       }
       .header {
         background-color: #ffcae0;
@@ -54,11 +68,13 @@
   </head>
   <body>
     <h1>Horario de Mari</h1>
+    <div class="controls">
+      <button onclick="reiniciarHorario()">Reiniciar horario</button>
+    </div>
     <div class="calendar" id="calendar"></div>
 
     <script>
       const calendar = document.getElementById("calendar");
-
       const days = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
       const hours = Array.from({ length: 13 }, (_, i) => i + 7); // 7am - 7pm
 
@@ -86,29 +102,61 @@
         });
       });
 
-      // Simulacro horarios (ejemplo)
-      const horarios = [
-        { curso: "Matemática I", clase: "matematica", dia: "Lunes", hora: 9 },
-        { curso: "Lenguaje I", clase: "lenguaje", dia: "Martes", hora: 10 },
-        { curso: "Contabilidad Intermedia", clase: "conta", dia: "Miércoles", hora: 11 },
-        { curso: "Psicología", clase: "psico", dia: "Jueves", hora: 8 },
-        { curso: "Vóley", clase: "voley", dia: "Viernes", hora: 17 },
-        { curso: "Voz", clase: "voz", dia: "Sábado", hora: 12 }
+      const opciones = [
+        { curso: "Matemática I", clase: "matematica", profesor: "Prof. Ruiz", dia: "Lunes", hora: 9 },
+        { curso: "Matemática I", clase: "matematica", profesor: "Prof. Ruiz", dia: "Miércoles", hora: 10 },
+        { curso: "Lenguaje I", clase: "lenguaje", profesor: "Prof. Torres", dia: "Martes", hora: 10 },
+        { curso: "Lenguaje I", clase: "lenguaje", profesor: "Prof. Torres", dia: "Jueves", hora: 12 },
+        { curso: "Contabilidad Intermedia", clase: "conta", profesor: "Prof. Vargas", dia: "Miércoles", hora: 11 },
+        { curso: "Contabilidad Intermedia", clase: "conta", profesor: "Prof. Vargas", dia: "Viernes", hora: 10 },
+        { curso: "Psicología", clase: "psico", profesor: "Prof. Salazar", dia: "Jueves", hora: 8 },
+        { curso: "Psicología", clase: "psico", profesor: "Prof. Salazar", dia: "Viernes", hora: 12 },
+        { curso: "Vóley", clase: "voley", profesor: "Coach Linares", dia: "Viernes", hora: 17 },
+        { curso: "Vóley", clase: "voley", profesor: "Coach Linares", dia: "Sábado", hora: 10 },
+        { curso: "Voz", clase: "voz", profesor: "Prof. Mena", dia: "Sábado", hora: 12 },
+        { curso: "Voz", clase: "voz", profesor: "Prof. Mena", dia: "Sábado", hora: 9 },
       ];
 
-      horarios.forEach(({ curso, clase, dia, hora }) => {
+      const seleccionadas = [];
+
+      opciones.forEach(({ curso, clase, profesor, dia, hora }) => {
         const cell = document.querySelector(`.cell[data-day="${dia}"][data-hour="${hora}"]`);
         if (cell) {
-          cell.textContent = curso;
+          cell.textContent += `${curso}\n(${profesor})`;
           cell.classList.add(clase);
           cell.onclick = () => {
-            document.querySelectorAll(".selected").forEach(e => e.classList.remove("selected"));
+            // Validar si ya está seleccionada otra opción del mismo curso
+            const mismoCurso = seleccionadas.find(sel => sel.curso === curso);
+            if (mismoCurso) {
+              const oldCell = document.querySelector(`.cell[data-day="${mismoCurso.dia}"][data-hour="${mismoCurso.hora}"]`);
+              if (oldCell) oldCell.classList.remove("selected");
+              seleccionadas.splice(seleccionadas.indexOf(mismoCurso), 1);
+            }
+
+            // Validar conflictos de horario
+            const conflicto = seleccionadas.find(sel => sel.dia === dia && sel.hora === hora);
+            if (conflicto) {
+              alert("Conflicto de horario con " + conflicto.curso);
+              return;
+            }
+
             cell.classList.add("selected");
-            alert(`Seleccionaste: ${curso} - ${dia} a las ${hora}:00`);
+            seleccionadas.push({ curso, dia, hora });
+            alert(`Agregado: ${curso} con ${profesor} - ${dia} a las ${hora}:00`);
           };
         }
       });
+
+      function reiniciarHorario() {
+        seleccionadas.forEach(({ dia, hora }) => {
+          const cell = document.querySelector(`.cell[data-day="${dia}"][data-hour="${hora}"]`);
+          if (cell) cell.classList.remove("selected");
+        });
+        seleccionadas.length = 0;
+        alert("Horario reiniciado.");
+      }
     </script>
   </body>
 </html>
+
 
